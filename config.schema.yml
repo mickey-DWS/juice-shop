@@ -172,6 +172,7 @@ products:
           type: string
         author:
           type: string
+          
 memories:
   -
     image:
