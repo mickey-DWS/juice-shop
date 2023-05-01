@@ -1,5 +1,4 @@
 name: Snyk Vulnerability Scan
-
 on:
   push:
     branches:
