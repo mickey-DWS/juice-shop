@@ -1,0 +1,48 @@
+name: Auto merge master to deploy branches
+
+on:
+  schedule:
+    # 毎週月曜から金曜の午前8時（UTCでの時間）
+    - cron: "30 2 * * 1-5"
+
+jobs:
+  auto-merge-main-to-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # masterブランチをチェックアウト
+      - uses: actions/checkout@v2
+        with:
+          ref: master
+
+      # masterからdev/test1へのPRを作成
+      - name: Create Pull Request master to dev/test1
+        id: create-pr-dev-test1
+        env:
+          GH_TOKEN: ${{ secrets.AUTO_DEP_TOKEN }}
+        run: |
+          PULL_REQUEST_URI_TEST1=$(gh pr create -B dev/test1 -t "【自動実行】dev/test1" -b "")
+          echo "::set-output name=PULL_REQUEST_URI_TEST1::$PULL_REQUEST_URI_TEST1"
+
+      # dev/test1へのPRをマージ
+      - name: Merge Pull Request to dev/test1
+        env:
+          GH_TOKEN: ${{ secrets.AUTO_DEP_TOKEN }}
+        run: |
+          gh pr merge ${{steps.create-pr-dev-test1.outputs.PULL_REQUEST_URI_TEST1}} --merge
+
+      # masterからdev/test2へのPRを作成
+      - name: Create Pull Request master to dev/test2
+        id: create-pr-dev-test2
+        env:
+          GH_TOKEN: ${{ secrets.AUTO_DEP_TOKEN }}
+        run: |
+          PULL_REQUEST_URI_TEST2=$(gh pr create -B dev/test2 -t "【自動実行】dev/test2" -b "")
+          echo "::set-output name=PULL_REQUEST_URI_TEST2::$PULL_REQUEST_URI_TEST2"
+
+      # dev/test2へのPRをマージ
+      - name: Merge Pull Request to dev/test2
+        env:
+          GH_TOKEN: ${{ secrets.AUTO_DEP_TOKEN }}
+        run: |
+          gh pr merge ${{steps.create-pr-dev-test2.outputs.PULL_REQUEST_URI_TEST2}} --merge
